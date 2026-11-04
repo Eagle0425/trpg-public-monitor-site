@@ -1,0 +1,42 @@
+name: Publish public information site
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: public-site-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out public site
+        uses: actions/checkout@v4
+      - name: Validate public contact and required pages
+        shell: bash
+        run: |
+          if grep -Rq 'CONTACT_EMAIL_REPLACE_ME' --include='*.html' .; then
+            echo 'A working public contact email must be confirmed before publishing.' >&2
+            exit 1
+          fi
+          for page in index.html privacy.html deletion.html review.html styles.css; do
+            test -f "$page" || exit 1
+          done
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
