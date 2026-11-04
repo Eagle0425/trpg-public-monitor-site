@@ -2,6 +2,12 @@ name: Publish public information site
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'styles.css'
+      - '.github/workflows/pages.yml'
 
 permissions:
   contents: read
